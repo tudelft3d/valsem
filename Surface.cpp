@@ -156,10 +156,14 @@ bool Surface::validate(double tol_planarity_d2p, double tol_planarity_normals)
     std::cout << v << std::endl;
 
     if (_sem == "bldg:WallSurface") {
-      if (abs(v.z()) < 0.1 )
-        std::cout << "WallSurface Valid" << std::endl;
-      else
-        std::cout << "WallSurface Invalid" << std::endl;
+      // if (abs(v.z()) < 0.1 )
+        // std::cout << "WallSurface Valid" << std::endl;
+      // else
+        // std::cout << "WallSurface Invalid" << std::endl;
+      Vector n(1, 0, 0);
+      double sinalpha = abs(v*n);
+      double angle = std::asin(sinalpha) * 180.0 / 3.14159;
+      std::cout << "angle wall " << angle << std::endl;
     }
     if (_sem == "bldg:RoofSurface") {
       Vector up(0, 0, 1);
