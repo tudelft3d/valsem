@@ -152,7 +152,23 @@ bool Surface::validate(double tol_planarity_d2p, double tol_planarity_normals)
 
     K::Plane_3 plane;
     linear_least_squares_fitting_3(allpts.begin(), allpts.end(), plane, CGAL::Dimension_tag<0>());
-    std::cout << plane << std::endl;
+    Vector v = plane.orthogonal_vector();
+    std::cout << v << std::endl;
+
+    if (_sem == "bldg:WallSurface") {
+      if (abs(v.z()) < 0.1 )
+        std::cout << "WallSurface Valid" << std::endl;
+      else
+        std::cout << "WallSurface Invalid" << std::endl;
+    }
+    if (_sem == "bldg:RoofSurface") {
+      Vector up(0, 0, 1);
+      double cosine = v * up / CGAL::sqrt(v * up) / CGAL::sqrt(v * up);
+      double angle = std::acos(cosine);
+      std::cout << "angle roof " << angle << std::endl;
+    }
+
+    std::cout << "---" << std::endl;
 
     return true;
 }
