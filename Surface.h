@@ -23,7 +23,7 @@ public:
   std::string get_semantics();
   
   int    add_point(Point3 p);
-  void   add_face(vector< vector<int> > f, std::string id = "", std::string semantics = "");
+  void   add_ring(vector<int> r);
   bool   validate_semantic(double tol_planarity_d2p, double tol_planarity_normals);
 
   std::string   get_report_xml();

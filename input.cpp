@@ -124,146 +124,142 @@ std::string localise(std::string s)
 }
 
 
-// vector<int> process_gml_ring(pugi::xml_node n, Shell* sh, IOErrors& errs) {
-//   std::string s = "./" + localise("LinearRing") + "/" + localise("pos");
-//   pugi::xpath_node_set npos = n.select_nodes(s.c_str());
-//   vector<int> r;
-//   if (npos.size() > 0) //-- <gml:pos> used
-//   {
-//     for (pugi::xpath_node_set::const_iterator it = npos.begin(); it != npos.end(); ++it) {
-//       std::string buf;
-//       std::stringstream ss(it->node().child_value());
-//       std::vector<std::string> tokens;
-//       while (ss >> buf)
-//         tokens.push_back(buf);
-//       Point3 p(std::stod(tokens[0]), std::stod(tokens[1]), std::stod(tokens[2]));
-//       r.push_back(sh->add_point(p));
-//     }
-//   }
-//   else //-- <gml:posList> used
-//   {
-//     std::string s = "./" + localise("LinearRing") + "/" + localise("posList");
-//     pugi::xpath_node pl = n.select_node(s.c_str());
-//     if (pl == NULL)
-//     {
-//       throw 901;
-//     }
-//     std::string buf;
-//     std::stringstream ss(pl.node().child_value());
-//     std::vector<std::string> coords;
-//     while (ss >> buf)
-//       coords.push_back(buf);
-//     if (coords.size() % 3 != 0)
-//     {
-//       errs.add_error(901, "Error: <gml:posList> has bad coordinates.");
-//       return r;
-//     }
-//     for (int i = 0; i < coords.size(); i += 3)
-//     {
-//       Point3 p(std::stod(coords[i]), std::stod(coords[i+1]), std::stod(coords[i+2]));
-//       r.push_back(sh->add_point(p));
-//     }
-//   }
-//   return r;
-// }
+vector<int> process_gml_ring(pugi::xml_node n, Surface* sur, IOErrors& errs) {
+  std::string s = "./" + localise("LinearRing") + "/" + localise("pos");
+  pugi::xpath_node_set npos = n.select_nodes(s.c_str());
+  vector<int> r;
+  if (npos.size() > 0) //-- <gml:pos> used
+  {
+    for (pugi::xpath_node_set::const_iterator it = npos.begin(); it != npos.end(); ++it) {
+      std::string buf;
+      std::stringstream ss(it->node().child_value());
+      std::vector<std::string> tokens;
+      while (ss >> buf)
+        tokens.push_back(buf);
+      Point3 p(std::stod(tokens[0]), std::stod(tokens[1]), std::stod(tokens[2]));
+      r.push_back(sur->add_point(p));
+    }
+  }
+  else //-- <gml:posList> used
+  {
+    std::string s = "./" + localise("LinearRing") + "/" + localise("posList");
+    pugi::xpath_node pl = n.select_node(s.c_str());
+    if (pl == NULL)
+    {
+      throw 901;
+    }
+    std::string buf;
+    std::stringstream ss(pl.node().child_value());
+    std::vector<std::string> coords;
+    while (ss >> buf)
+      coords.push_back(buf);
+    if (coords.size() % 3 != 0)
+    {
+      errs.add_error(901, "Error: <gml:posList> has bad coordinates.");
+      return r;
+    }
+    for (int i = 0; i < coords.size(); i += 3)
+    {
+      Point3 p(std::stod(coords[i]), std::stod(coords[i+1]), std::stod(coords[i+2]));
+      r.push_back(sur->add_point(p));
+    }
+  }
+  return r;
+}
 
 
-// Shell* process_gml_compositesurface(pugi::xml_node n, int id, map<std::string, pugi::xpath_node>& dallpoly, double tol_snap, IOErrors& errs, bool translatevertices) 
-// {
-//   std::string s = ".//" + localise("surfaceMember");
-//   pugi::xpath_node_set nsm = n.select_nodes(s.c_str());
-//   Shell* sh = new Shell(id, tol_snap);
-//   int i = 0;
-//   for (pugi::xpath_node_set::const_iterator it = nsm.begin(); it != nsm.end(); ++it)
-//   {
-//     vector< vector<int> > oneface;
-//     bool bxlink = false;
-//     pugi::xml_node tmpnode = it->node();
-//     pugi::xpath_node p;
-//     bool fliporientation = false;
-//     for (pugi::xml_attribute attr = tmpnode.first_attribute(); attr; attr = attr.next_attribute())
-//     {
-//       if (strcmp(attr.value(), "xlink:href") != 0) {
-//         bxlink = true;
-//         break;
-//       }
-//     }
-//     if (bxlink == true) 
-//     {
-//       std::string k = it->node().attribute("xlink:href").value();
-//       if (k[0] == '#')
-//         k = k.substr(1);
-//       p = dallpoly[k];
-//     }
-//     else
-//     {
-//       for (pugi::xml_node child : it->node().children()) 
-//       {
-//         if (std::string(child.name()).find("Polygon") != std::string::npos) {
-//           p = child;
-//           break;
-//         }
-//         else if (std::string(child.name()).find("OrientableSurface") != std::string::npos) {
-//           if (std::strncmp(child.attribute("orientation").value(), "-", 1) == 0)
-//             fliporientation = true;
-//           for (pugi::xml_node child2 : child.children()) 
-//           {
-//             if (std::string(child2.name()).find("baseSurface") != std::string::npos) 
-//             {
-//               std::string k = child2.attribute("xlink:href").value();
-//               if (k[0] == '#')
-//                 k = k.substr(1);
-//               p = dallpoly[k];
-//               break;
-//             }
-//           }
-//           break;
-//         }
-//         else if (std::string(child.name()).find("CompositeSurface") != std::string::npos) 
-//           break;
-//         else {
-//           throw 901;
-//         }
-//       }
-//     }
+void process_GML_MultiSurface(pugi::xml_node n, Building& b, map<std::string, pugi::xpath_node>& dallpoly, double tol_snap, IOErrors& errs) 
+{
+  std::string s = ".//" + localise("surfaceMember");
+  pugi::xpath_node_set nsm = n.select_nodes(s.c_str());
+  int i = 0;
+  for (pugi::xpath_node_set::const_iterator it = nsm.begin(); it != nsm.end(); ++it)
+  {
+    bool bxlink = false;
+    pugi::xml_node tmpnode = it->node();
+    pugi::xpath_node p;
+    bool fliporientation = false;
+    for (pugi::xml_attribute attr = tmpnode.first_attribute(); attr; attr = attr.next_attribute())
+    {
+      if (strcmp(attr.value(), "xlink:href") != 0) {
+        bxlink = true;
+        break;
+      }
+    }
+    if (bxlink == true) 
+    {
+      std::string k = it->node().attribute("xlink:href").value();
+      if (k[0] == '#')
+        k = k.substr(1);
+      p = dallpoly[k];
+    }
+    else
+    {
+      for (pugi::xml_node child : it->node().children()) 
+      {
+        if (std::string(child.name()).find("Polygon") != std::string::npos) {
+          p = child;
+          break;
+        }
+        else if (std::string(child.name()).find("OrientableSurface") != std::string::npos) {
+          if (std::strncmp(child.attribute("orientation").value(), "-", 1) == 0)
+            fliporientation = true;
+          for (pugi::xml_node child2 : child.children()) 
+          {
+            if (std::string(child2.name()).find("baseSurface") != std::string::npos) 
+            {
+              std::string k = child2.attribute("xlink:href").value();
+              if (k[0] == '#')
+                k = k.substr(1);
+              p = dallpoly[k];
+              break;
+            }
+          }
+          break;
+        }
+        else if (std::string(child.name()).find("CompositeSurface") != std::string::npos) 
+          break;
+        else {
+          throw 901;
+        }
+      }
+    }
 
-//     //-- this is to handle CompositeSurfaces part of MultiSurfaces
-//     if (p == NULL) 
-//       continue;
+    //-- this is to handle CompositeSurfaces part of MultiSurfaces
+    if (p == NULL) 
+      continue;
     
-//     if (std::strncmp(p.node().attribute("orientation").value(), "-", 1) == 0)
-//       fliporientation = true;
-//     //-- exterior ring (only 1)
-//     s = ".//" + localise("exterior");
-//     pugi::xpath_node ring = p.node().select_node(s.c_str());
-//     vector<int> r = process_gml_ring(ring.node(), sh, errs);
-//     if (fliporientation == true) 
-//       std::reverse(r.begin(), r.end());
-//     if (r.front() != r.back())
-//       sh->add_error(103, p.node().attribute("gml:id").value());
-//     else
-//       r.pop_back(); 
-//     oneface.push_back(r);
-//     //-- interior rings
-//     s = ".//" + localise("interior");
-//     pugi::xpath_node_set nint = it->node().select_nodes(s.c_str());
-//     for (pugi::xpath_node_set::const_iterator it = nint.begin(); it != nint.end(); ++it) {
-//       vector<int> r = process_gml_ring(it->node(), sh, errs);
-//       if (fliporientation == true) 
-//         std::reverse(r.begin(), r.end());
-//       if (r.front() != r.back())
-//         sh->add_error(103, p.node().attribute("gml:id").value());
-//       else
-//         r.pop_back(); 
-//       oneface.push_back(r);
-//     }
-//     sh->add_face(oneface, p.node().attribute("gml:id").value());
-//     i++;
-//   }
-//   if (translatevertices == true)
-//     sh->translate_vertices();
-//   return sh;
-// }
+    if (std::strncmp(p.node().attribute("orientation").value(), "-", 1) == 0)
+      fliporientation = true;
+    Surface* sur = new Surface(n.name());
+    //-- exterior ring (only 1)
+    s = ".//" + localise("exterior");
+    pugi::xpath_node ring = p.node().select_node(s.c_str());
+    vector<int> r = process_gml_ring(ring.node(), sur, errs);
+    if (fliporientation == true) 
+      std::reverse(r.begin(), r.end());
+    if (r.front() != r.back())
+      sur->add_error(103, p.node().attribute("gml:id").value());
+    else
+      r.pop_back(); 
+    sur->add_ring(r);
+    //-- interior rings
+    s = ".//" + localise("interior");
+    pugi::xpath_node_set nint = it->node().select_nodes(s.c_str());
+    for (pugi::xpath_node_set::const_iterator it = nint.begin(); it != nint.end(); ++it) {
+      vector<int> r = process_gml_ring(it->node(), sur, errs);
+      if (fliporientation == true) 
+        std::reverse(r.begin(), r.end());
+      if (r.front() != r.back())
+        sur->add_error(103, p.node().attribute("gml:id").value());
+      else
+        r.pop_back(); 
+      sur->add_ring(r);
+    }
+    b.add_surface(sur);
+    i++;
+  }
+}
 
 
 vector<Building> readGMLfile(std::string &ifile, IOErrors& errs)
@@ -321,36 +317,36 @@ vector<Building> readGMLfile(std::string &ifile, IOErrors& errs)
     }
   }
   
-  // for(auto& nbuilding: nbuildings)
-  // {
-  //   Building b;
-  //   if (nbuilding.node().attribute("gml:id") != 0)
-  //     b.set_id(std::string(nbuilding.node().attribute("gml:id").value()));
-  //   if (prim == SOLID) 
-  //   {
-  //     std::string s = "./" + localise("exterior");
-  //     pugi::xpath_node next = nbuilding.node().select_node(s.c_str());
-  //     b.set_oshell(process_gml_compositesurface(next.node(), 0, dallpoly, tol_snap, errs));
-  //     //-- interior shells
-  //     s = "./" + localise("interior");
-  //     pugi::xpath_node_set nint = nbuilding.node().select_nodes(s.c_str());
-  //     int id = 1;
-  //     for (pugi::xpath_node_set::const_iterator it = nint.begin(); it != nint.end(); ++it)
-  //     {
-  //       b.add_ishell(process_gml_compositesurface(it->node(), id, dallpoly, tol_snap, errs));
-  //       id++;
-  //     }
-  //   }
-  //   else if (prim == COMPOSITESURFACE)
-  //   {
-  //     b.set_oshell(process_gml_compositesurface(nbuilding.node(), 0, dallpoly, tol_snap, errs));
-  //   }
-  //   else 
-  //   {
-  //     b.set_oshell(process_gml_compositesurface(nbuilding.node(), 0, dallpoly, tol_snap, errs));
-  //   }
-  //   lsBuildings.push_back(b);
-  // }
+  for(auto& nbuilding: nbuildings)
+  {
+    Building b;
+    if (nbuilding.node().attribute("gml:id") != 0)
+      b.set_id(std::string(nbuilding.node().attribute("gml:id").value()));
+    std::string s = "./" + localise("boundedBy");
+    pugi::xpath_node_set nbounds = nbuilding.node().select_nodes(s.c_str());
+    std::cout << nbounds.size() << std::endl;
+    
+    for (pugi::xpath_node_set::const_iterator it = nbounds.begin(); it != nbounds.end(); ++it) {
+      for (pugi::xml_node child : it->node().children()) {
+        std::cout << child.name() << std::endl;
+      }
+    }
+
+
+    // b.set_oshell(process_gml_compositesurface(boundedby.node(), 0, dallpoly, tol_snap, errs));
+
+
+    // //-- interior shells
+    // s = "./" + localise("interior");
+    // pugi::xpath_node_set nint = nbuilding.node().select_nodes(s.c_str());
+    // int id = 1;
+    // for (pugi::xpath_node_set::const_iterator it = nint.begin(); it != nint.end(); ++it)
+    // {
+    //   b.add_ishell(process_gml_compositesurface(it->node(), id, dallpoly, tol_snap, errs));
+    //   id++;
+    // }
+    lsBuilding.push_back(b);
+  }
   std::cout << "Input file correctly parsed without errors." << std::endl;
   return lsBuilding;
 }

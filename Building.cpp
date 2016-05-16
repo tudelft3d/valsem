@@ -8,6 +8,7 @@
 
 #include "input.h"
 #include "Building.h"
+#include "Surface.h"
 
 
 int Building::_counter = 0;
@@ -21,6 +22,10 @@ Building::Building(std::string id) {
   _is_valid = -1;
 }
 
+
+void Building::add_surface(Surface* s) {
+  _lsSurfaces.push_back(s);
+}
 
 int Building::num_faces() {
   return 0;

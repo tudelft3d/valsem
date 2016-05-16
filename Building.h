@@ -17,6 +17,8 @@ class Building
 {
 public:
   Building(std::string id = "");
+
+  void          add_surface(Surface* s);
   int           num_faces();
   int           num_vertices();
   

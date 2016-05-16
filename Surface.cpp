@@ -88,6 +88,11 @@ std::string Surface::get_report_xml()
 }
 
 
+void Surface::add_ring(vector<int> r) {
+  _lsRings.push_back(r);
+}
+
+
 int Surface::add_point(Point3 p)
 {
   int pos = -1;
@@ -116,6 +121,7 @@ int Surface::number_vertices()
 {
   return _lsPts.size();
 }
+
 
 bool Surface::validate_semantic(double tol_planarity_d2p, double tol_planarity_normals)
 {
