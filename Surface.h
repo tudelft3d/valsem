@@ -20,11 +20,12 @@ public:
   int         number_vertices();
   bool        is_empty();
   std::string get_id();
+  void        set_id(std::string id);
   std::string get_semantics();
   
-  int    add_point(Point3 p);
-  void   add_ring(vector<int> r);
-  bool   validate_semantic(double tol_planarity_d2p, double tol_planarity_normals);
+  int         add_point(Point3 p);
+  void        add_ring(vector<int> r);
+  bool        validate(double tol_planarity_d2p = 0, double tol_planarity_normals = 0);
 
   std::string   get_report_xml();
   void          add_error(int code, std::string faceid = "", std::string info = "");

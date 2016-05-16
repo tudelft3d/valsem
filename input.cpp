@@ -232,6 +232,7 @@ void process_GML_MultiSurface(pugi::xml_node n, Building& b, map<std::string, pu
     if (std::strncmp(p.node().attribute("orientation").value(), "-", 1) == 0)
       fliporientation = true;
     Surface* sur = new Surface(n.name());
+    sur->set_id(p.node().attribute("gml:id").value());
     //-- exterior ring (only 1)
     s = ".//" + localise("exterior");
     pugi::xpath_node ring = p.node().select_node(s.c_str());
@@ -329,22 +330,9 @@ vector<Building> readGMLfile(std::string &ifile, IOErrors& errs)
     for (pugi::xpath_node_set::const_iterator it = nbounds.begin(); it != nbounds.end(); ++it) {
       for (pugi::xml_node child : it->node().children()) {
         std::cout << child.name() << std::endl;
+        process_GML_MultiSurface(child, b, dallpoly, 0.001, errs);
       }
     }
-
-
-    // b.set_oshell(process_gml_compositesurface(boundedby.node(), 0, dallpoly, tol_snap, errs));
-
-
-    // //-- interior shells
-    // s = "./" + localise("interior");
-    // pugi::xpath_node_set nint = nbuilding.node().select_nodes(s.c_str());
-    // int id = 1;
-    // for (pugi::xpath_node_set::const_iterator it = nint.begin(); it != nint.end(); ++it)
-    // {
-    //   b.add_ishell(process_gml_compositesurface(it->node(), id, dallpoly, tol_snap, errs));
-    //   id++;
-    // }
     lsBuilding.push_back(b);
   }
   std::cout << "Input file correctly parsed without errors." << std::endl;

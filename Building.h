@@ -20,9 +20,8 @@ public:
 
   void          add_surface(Surface* s);
   int           num_faces();
-  int           num_vertices();
   
-  bool          validate(double tol_planarity_d2p, double tol_planarity_normals);
+  bool          validate(double tol_planarity_d2p = 0, double tol_planarity_normals = 0);
   std::string   get_report_xml();
   
   std::string   get_id();

@@ -28,14 +28,17 @@ void Building::add_surface(Surface* s) {
 }
 
 int Building::num_faces() {
-  return 0;
+  return _lsSurfaces.size();
 }
 
-int Building::num_vertices() {
-  return 0;
-}
 
 bool Building::validate(double tol_planarity_d2p, double tol_planarity_normals) {
+  for (auto& s : _lsSurfaces) {
+    std::cout << s->get_id() << std::endl;
+    std::cout << s->get_semantics() << std::endl;
+    s->validate();
+  }
+
   return true;
 }
 

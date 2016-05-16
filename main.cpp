@@ -139,29 +139,35 @@ int main(int argc, char* const argv[])
       ioerrs.add_error(901, "Unknown file type (only GML/XML accepted)");
     }
 
-    //-- now the validation starts
-    if ( (lsBuilding.empty() == false) && (ioerrs.has_errors() == false) )
-    {
-      std::cout << "Validating " << lsBuilding.size() << " Buildings.";
-      std::cout << std::endl;
-      int i = 1;
-      for (auto& b : lsBuilding)
-      {
-        if ( (i % 10 == 0) && (verbose.getValue() == false) )
-          printProgressBar(100 * (i / double(lsBuilding.size())));
-        i++;
-        std::clog << std::endl << "===== Validating Building #" << b.get_id() << " =====" << std::endl;
-        // std::clog << "Number shells: " << (b.num_ishells() + 1) << std::endl;
-        // std::clog << "Number faces: " << b.num_faces() << std::endl;
-        std::clog << "Number vertices: " << b.num_vertices() << std::endl;
-        if (b.validate(planarity_d2p.getValue(), planarity_n.getValue()) == false)
-          std::clog << "===== INVALID =====" << std::endl;
-        else
-          std::clog << "===== VALID =====" << std::endl;
-      }
-      if (verbose.getValue() == false)
-        printProgressBar(100);
-    }
+    std::cout << "==========" << std::endl;
+
+    Building b = lsBuilding[0];
+    b.validate();
+
+
+    // //-- now the validation starts
+    // if ( (lsBuilding.empty() == false) && (ioerrs.has_errors() == false) )
+    // {
+    //   std::cout << "Validating " << lsBuilding.size() << " Buildings.";
+    //   std::cout << std::endl;
+    //   int i = 1;
+    //   for (auto& b : lsBuilding)
+    //   {
+    //     if ( (i % 10 == 0) && (verbose.getValue() == false) )
+    //       printProgressBar(100 * (i / double(lsBuilding.size())));
+    //     i++;
+    //     std::clog << std::endl << "===== Validating Building #" << b.get_id() << " =====" << std::endl;
+    //     // std::clog << "Number shells: " << (b.num_ishells() + 1) << std::endl;
+    //     // std::clog << "Number faces: " << b.num_faces() << std::endl;
+    //     std::clog << "Number vertices: " << b.num_vertices() << std::endl;
+    //     if (b.validate(planarity_d2p.getValue(), planarity_n.getValue()) == false)
+    //       std::clog << "===== INVALID =====" << std::endl;
+    //     else
+    //       std::clog << "===== VALID =====" << std::endl;
+    //   }
+    //   if (verbose.getValue() == false)
+    //     printProgressBar(100);
+    // }
 
     //-- print summary of errors
 //    std::cout << "\n" << print_summary_validation(lsBuilding, prim3d) << std::endl;        

@@ -11,6 +11,10 @@
 #include "geomtools.h"
 #include <sstream>
 
+#include "CGAL/squared_distance_3.h"
+#include <CGAL/linear_least_squares_fitting_3.h>
+
+
 int Surface::_counter = 0;
 
 Surface::Surface(std::string sem, std::string id) {
@@ -26,6 +30,10 @@ Surface::Surface(std::string sem, std::string id) {
 std::string Surface::get_id()
 {
   return _id;
+}
+
+void Surface::set_id(std::string id) {
+  _id = id;
 }
 
 std::string Surface::get_semantics()
@@ -123,9 +131,30 @@ int Surface::number_vertices()
 }
 
 
-bool Surface::validate_semantic(double tol_planarity_d2p, double tol_planarity_normals)
+bool Surface::validate(double tol_planarity_d2p, double tol_planarity_normals)
 {
-  return true;
+    vector< Point3 > allpts;
+    vector<int>::const_iterator itp = _lsRings[0].begin();
+    for ( ; itp != (_lsRings[0]).end(); itp++)
+    {
+      allpts.push_back(_lsPts[*itp]);
+    }
+    //-- irings
+    for (int j = 1; j < static_cast<int>(_lsRings.size()); j++)
+    {
+      vector<int> &ids2 = _lsRings[j]; // helpful alias for the inner boundary
+      vector<int>::const_iterator itp2 = ids2.begin();
+      for ( ; itp2 != ids2.end(); itp2++)
+      {
+        allpts.push_back(_lsPts[*itp2]);
+      }
+    }
+
+    K::Plane_3 plane;
+    linear_least_squares_fitting_3(allpts.begin(), allpts.end(), plane, CGAL::Dimension_tag<0>());
+    std::cout << plane << std::endl;
+
+    return true;
 }
 //   std::clog << "--2D validation of each surface" << std::endl;
 //   bool isValid = true;
