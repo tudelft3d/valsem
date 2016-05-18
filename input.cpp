@@ -206,13 +206,22 @@ void process_GML_MultiSurface(pugi::xml_node n, Building& b, map<std::string, pu
             fliporientation = true;
           for (pugi::xml_node child2 : child.children()) 
           {
-            if (std::string(child2.name()).find("baseSurface") != std::string::npos) 
-            {
+            if (std::string(child2.name()).find("baseSurface") != std::string::npos) {
               std::string k = child2.attribute("xlink:href").value();
-              if (k[0] == '#')
-                k = k.substr(1);
-              p = dallpoly[k];
-              break;
+              if (k != "") {
+                if (k[0] == '#')
+                  k = k.substr(1);
+                p = dallpoly[k];
+                break;
+              }
+              else { //-- no xlinks
+                for (pugi::xml_node child : child2.children()) {
+                  if (std::string(child.name()).find("Polygon") != std::string::npos) {
+                    p = child;
+                    break;
+                  }
+                }
+              }
             }
           }
           break;
@@ -323,7 +332,7 @@ vector<Building> readGMLfile(std::string &ifile, IOErrors& errs)
     Building b;
     if (nbuilding.node().attribute("gml:id") != 0)
       b.set_id(std::string(nbuilding.node().attribute("gml:id").value()));
-    std::string s = "./" + localise("boundedBy");
+    std::string s = ".//" + localise("boundedBy");
     pugi::xpath_node_set nbounds = nbuilding.node().select_nodes(s.c_str());
     // std::cout << nbounds.size() << std::endl;
     
