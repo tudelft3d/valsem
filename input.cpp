@@ -239,8 +239,8 @@ void process_GML_MultiSurface(pugi::xml_node n, Building& b, map<std::string, pu
     vector<int> r = process_gml_ring(ring.node(), sur, errs);
     if (fliporientation == true) 
       std::reverse(r.begin(), r.end());
-    if (r.front() != r.back())
-      sur->add_error(103, p.node().attribute("gml:id").value());
+    // if (r.front() != r.back())
+      // sur->add_error(103, p.node().attribute("gml:id").value());
     else
       r.pop_back(); 
     sur->add_ring(r);
@@ -251,8 +251,8 @@ void process_GML_MultiSurface(pugi::xml_node n, Building& b, map<std::string, pu
       vector<int> r = process_gml_ring(it->node(), sur, errs);
       if (fliporientation == true) 
         std::reverse(r.begin(), r.end());
-      if (r.front() != r.back())
-        sur->add_error(103, p.node().attribute("gml:id").value());
+      // if (r.front() != r.back())
+        // sur->add_error(103, p.node().attribute("gml:id").value());
       else
         r.pop_back(); 
       sur->add_ring(r);

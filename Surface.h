@@ -28,9 +28,6 @@ public:
   bool        validate(double tol_planarity_d2p = 0, double tol_planarity_normals = 0);
 
   std::string   get_report_xml();
-  void          add_error(int code, std::string faceid = "", std::string info = "");
-  bool          has_errors();
-  std::set<int> get_unique_error_codes();
   static int    _counter;
   
 private:
@@ -39,7 +36,6 @@ private:
   std::string                     _id;
   std::string                     _sem;
 
-  std::map<int, vector<std::tuple<std::string, std::string> > > _errors;
 
   // bool validate_polygon(vector<Polygon> &lsRings, std::string polygonid);
   // bool has_face_rings_toofewpoints(const vector< vector<int> >& theface);

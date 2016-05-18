@@ -51,10 +51,6 @@ std::string Surface::get_semantics()
 }
 
 
-bool Surface::has_errors()
-{
-return !(_errors.empty());
-}
 
 bool Surface::is_empty()
 {
@@ -62,45 +58,22 @@ bool Surface::is_empty()
 }
 
 
-void Surface::add_error(int code, std::string faceid, std::string info)
-{
-  std::tuple<std::string, std::string> a(faceid, info);
-  _errors[code].push_back(a);
-  std::clog << "\tERROR " << code << ": " << errorcode2description(code);
-  if (faceid.empty() == false)
-    std::clog << " (face " << faceid << ")";
-  std::clog << std::endl;
-  if (info.empty() == false)
-    std::clog << "\t[" << info << "]" << std::endl;
-}
-
-std::set<int> Surface::get_unique_error_codes()
-{
-  std::set<int> errs;
-  for (auto& err : _errors)
-  {
-    errs.insert(std::get<0>(err));
-  }
-  return errs;
-}
-
-
 std::string Surface::get_report_xml()
 {
   std::stringstream ss;
-  for (auto& err : _errors)
-  {
-    for (auto& e : _errors[std::get<0>(err)])
-    {
-      ss << "\t\t<Error>" << std::endl;
-      ss << "\t\t\t<code>" << std::get<0>(err) << "</code>" << std::endl;
-      ss << "\t\t\t<type>" << errorcode2description(std::get<0>(err)) << "</type>" << std::endl;
-      ss << "\t\t\t<shell>" << this->_id << "</shell>" << std::endl;
-      ss << "\t\t\t<face>" << std::get<0>(e) << "</face>" << std::endl;
-      ss << "\t\t\t<info>" << std::get<1>(e) << "</info>" << std::endl;
-      ss << "\t\t</Error>" << std::endl;
-    }
-  }
+  // for (auto& err : _errors)
+  // {
+  //   for (auto& e : _errors[std::get<0>(err)])
+  //   {
+  //     ss << "\t\t<Error>" << std::endl;
+  //     ss << "\t\t\t<code>" << std::get<0>(err) << "</code>" << std::endl;
+  //     ss << "\t\t\t<type>" << errorcode2description(std::get<0>(err)) << "</type>" << std::endl;
+  //     ss << "\t\t\t<shell>" << this->_id << "</shell>" << std::endl;
+  //     ss << "\t\t\t<face>" << std::get<0>(e) << "</face>" << std::endl;
+  //     ss << "\t\t\t<info>" << std::get<1>(e) << "</info>" << std::endl;
+  //     ss << "\t\t</Error>" << std::endl;
+  //   }
+  // }
   return ss.str();
 }
 
@@ -180,6 +153,18 @@ bool Surface::validate(double tol_planarity_d2p, double tol_planarity_normals)
     else if (_sem == "GroundSurface") {
       std::cout << "GroundSurface" << std::endl;
       std::cout << "angle " << angle << std::endl;
+      std::cout << n << std::endl;
+      Polygon pgn;
+      vector<int>::const_iterator itp = _lsRings[0].begin();
+      for ( ; itp != (_lsRings[0]).end(); itp++)
+      {
+        Point3 p = _lsPts[*itp];
+        pgn.push_back(Point2(p.x(), p.y()));
+      }
+      if (pgn.orientation() == CGAL::CLOCKWISE) {
+        n = plane.opposite().orthogonal_vector();
+        angle = std::acos(n * up) * 180 / PI;
+      }
       if (angle < 175)
         std::cout << "INVALID" << std::endl;
     }
