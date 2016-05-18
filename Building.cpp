@@ -32,8 +32,10 @@ int Building::num_faces() {
 }
 
 
-std::string Building::validate() {
+std::string Building::validate(int &total, int &valid) {
   double anglenormal;
+  total = this->num_faces();
+  int totalvalid = 0;
   std::stringstream ss;
   ss << "\t<building ID=\"" << this->_id << "\">" << std::endl;
   ss << "\t\t<numbersurfaces>" << this->num_faces() << "</numbersurfaces>" << std::endl;
@@ -41,8 +43,10 @@ std::string Building::validate() {
   for (auto& s : _lsSurfaces) {
     ss << "\t\t<Surface ID=\"" << s->get_id() << "\" type=\"" << s->get_semantics() << "\">" << std::endl;
     int re = s->validate(anglenormal);
-    if (re == 1)
+    if (re == 1) {
+      totalvalid += 1;
       ss << "\t\t\t<valdity>True</valdity>" << std::endl; 
+    }
     else if (re == -1)
       ss << "\t\t\t<valdity>False</valdity>" << std::endl; 
     else if (re == 0)
@@ -51,6 +55,7 @@ std::string Building::validate() {
     ss << "\t\t</Surface>" << std::endl;
   }
   ss << "\t</building>" << std::endl;
+  valid = totalvalid;
   return ss.str();
 }
 

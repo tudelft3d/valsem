@@ -135,14 +135,11 @@ int main(int argc, char* const argv[])
       ioerrs.add_error(901, "Unknown file type (only GML/XML accepted)");
     }
 
-    std::cout << "==========" << std::endl;
-
-    // Building b = lsBuilding[0];
-    // std::cout << b.validate() << std::endl;
-
     //-- now the validation starts
     std::stringstream ss;
     ss << "<semantic>" << std::endl;
+    int totalsurfaces = 0;
+    int totalvalidsurfaces = 0;
     if ( (lsBuilding.empty() == false) && (ioerrs.has_errors() == false) )
     {
       std::cout << "Validating " << lsBuilding.size() << " Buildings.";
@@ -153,13 +150,29 @@ int main(int argc, char* const argv[])
         if ( (i % 10 == 0) && (verbose.getValue() == false) )
           printProgressBar(100 * (i / double(lsBuilding.size())));
         i++;
-        printProgressBar(100);
-        ss << b.validate();
+        int total;
+        int valid;
+        ss << b.validate(total, valid);
+        totalsurfaces += total;
+        totalvalidsurfaces += valid;
       }
+      printProgressBar(100);
     }
     ss << "</semantic>" << std::endl;
+    std::cout << std::endl;
 
-   
+    //-- SUMMARY
+    std::stringstream ss2;
+    ss2 << std::endl;
+    ss2 << "+++++++++++++++++++ SUMMARY +++++++++++++++++++" << std::endl;
+    ss2 << "total # of Buildings: " << setw(12) << lsBuilding.size() << std::endl;
+    ss2 << "total # of Surfaces: " << setw(13) << totalsurfaces << std::endl;
+    ss2 << "# valid: " << setw(25) << totalvalidsurfaces << std::endl;
+    ss2 << "# invalid: " << setw(23) << (totalsurfaces - totalvalidsurfaces) << std::endl;
+    ss2 << "+++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    std::cout << ss2.str() << std::endl;
+
+
     if (outputxml.getValue() != "")
     {
       std::ofstream thereport;

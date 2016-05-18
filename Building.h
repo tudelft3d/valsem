@@ -19,7 +19,7 @@ public:
   Building(std::string id = "");
   void          add_surface(Surface* s);
   int           num_faces();
-  std::string   validate();
+  std::string   validate(int &total, int &valid);
   std::string   get_id();
   void          set_id(std::string id);
   static int    _counter;
