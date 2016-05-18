@@ -325,11 +325,11 @@ vector<Building> readGMLfile(std::string &ifile, IOErrors& errs)
       b.set_id(std::string(nbuilding.node().attribute("gml:id").value()));
     std::string s = "./" + localise("boundedBy");
     pugi::xpath_node_set nbounds = nbuilding.node().select_nodes(s.c_str());
-    std::cout << nbounds.size() << std::endl;
+    // std::cout << nbounds.size() << std::endl;
     
     for (pugi::xpath_node_set::const_iterator it = nbounds.begin(); it != nbounds.end(); ++it) {
       for (pugi::xml_node child : it->node().children()) {
-        std::cout << child.name() << std::endl;
+        // std::cout << child.name() << std::endl;
         process_GML_MultiSurface(child, b, dallpoly, 0.001, errs);
       }
     }

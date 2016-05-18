@@ -30,10 +30,6 @@
 #include <time.h>  
 
 
-std::string print_summary_validation(vector<Building>& lsSolids);
-void write_report_xml (std::ofstream& ss, std::string ifile, 
-                      double snap_tolerance, double planarity_d2p, double planarity_n, 
-                      vector<Building>& lsBuilding, IOErrors ioerrs);
 
 class MyOutput : public TCLAP::StdOutput
 {
@@ -141,48 +137,34 @@ int main(int argc, char* const argv[])
 
     std::cout << "==========" << std::endl;
 
-    Building b = lsBuilding[0];
-    std::cout << b.validate() << std::endl;
+    // Building b = lsBuilding[0];
+    // std::cout << b.validate() << std::endl;
 
+    //-- now the validation starts
+    std::stringstream ss;
+    ss << "<semantic>" << std::endl;
+    if ( (lsBuilding.empty() == false) && (ioerrs.has_errors() == false) )
+    {
+      std::cout << "Validating " << lsBuilding.size() << " Buildings.";
+      std::cout << std::endl;
+      int i = 1;
+      for (auto& b : lsBuilding)
+      {
+        if ( (i % 10 == 0) && (verbose.getValue() == false) )
+          printProgressBar(100 * (i / double(lsBuilding.size())));
+        i++;
+        printProgressBar(100);
+        ss << b.validate();
+      }
+    }
+    ss << "</semantic>" << std::endl;
 
-    // //-- now the validation starts
-    // if ( (lsBuilding.empty() == false) && (ioerrs.has_errors() == false) )
-    // {
-    //   std::cout << "Validating " << lsBuilding.size() << " Buildings.";
-    //   std::cout << std::endl;
-    //   int i = 1;
-    //   for (auto& b : lsBuilding)
-    //   {
-    //     if ( (i % 10 == 0) && (verbose.getValue() == false) )
-    //       printProgressBar(100 * (i / double(lsBuilding.size())));
-    //     i++;
-    //     std::clog << std::endl << "===== Validating Building #" << b.get_id() << " =====" << std::endl;
-    //     // std::clog << "Number shells: " << (b.num_ishells() + 1) << std::endl;
-    //     // std::clog << "Number faces: " << b.num_faces() << std::endl;
-    //     std::clog << "Number vertices: " << b.num_vertices() << std::endl;
-    //     if (b.validate(planarity_d2p.getValue(), planarity_n.getValue()) == false)
-    //       std::clog << "===== INVALID =====" << std::endl;
-    //     else
-    //       std::clog << "===== VALID =====" << std::endl;
-    //   }
-    //   if (verbose.getValue() == false)
-    //     printProgressBar(100);
-    // }
-
-    //-- print summary of errors
-//    std::cout << "\n" << print_summary_validation(lsBuilding, prim3d) << std::endl;        
    
     if (outputxml.getValue() != "")
     {
       std::ofstream thereport;
       thereport.open(outputxml.getValue());
-      write_report_xml(thereport, 
-                       inputfile.getValue(),
-                       snap_tolerance.getValue(),
-                       planarity_d2p.getValue(),
-                       planarity_n.getValue(),
-                       lsBuilding,
-                       ioerrs);
+      thereport << ss.str();
       thereport.close();
       std::cout << "Full validation report saved to " << outputxml.getValue() << std::endl;
     }
@@ -203,110 +185,3 @@ int main(int argc, char* const argv[])
   }
 }
 
-
-std::string print_summary_validation(vector<Building>& lsBuilding)
-{
-  return "SUMMARY";
-  // std::stringstream ss;
-  // ss << std::endl;
-  // std::string primitives;
-  // if (prim3d == SOLID)
-  //   primitives = "<gml:Solid>";
-  // else if (prim3d == COMPOSITESURFACE)
-  //   primitives = "<gml:CompositeSurface>";
-  // else 
-  //   primitives = "<gml:MultiSurface>";
-  // ss << "+++++++++++++++++++ SUMMARY +++++++++++++++++++" << std::endl;
-  // ss << "Primitives validated: " << primitives << std::endl;
-  // ss << "total # of primitives: " << setw(8) << lsBuilding.size() << std::endl;
-  // int bValid = 0;
-  // for (auto& s : lsBuilding)
-  //   if (s.is_valid() == true)
-  //     bValid++;
-  // int percentage;
-  // if (lsBuilding.size() == 0)
-  //   percentage = 0;
-  // else
-  //   percentage = 100 * ((lsBuilding.size() - bValid) / float(lsBuilding.size()));
-  // ss << "# valid: " << setw(22) << bValid;
-  // if (lsBuilding.size() == 0)
-  //   ss << " (" << 0 << "%)" << std::endl;
-  // else
-  //   ss << " (" << 100 - percentage << "%)" << std::endl;
-  // ss << "# invalid: " << setw(20) << (lsBuilding.size() - bValid);
-  // ss << " (" << percentage << "%)" << std::endl;
-  // std::map<int,int> errors;
-  // for (auto& s : lsBuilding)
-  // {
-  //   for (auto& code : s.get_unique_error_codes())
-  //     errors[code] = 0;
-  // }
-  // for (auto& s : lsBuilding)
-  // {
-  //   for (auto& code : s.get_unique_error_codes())
-  //     errors[code] += 1;
-  // }
-  // if (errors.size() > 0)
-  // {
-  //   ss << "Errors present:" << std::endl;
-  //   for (auto e : errors)
-  //   {
-  //     ss << "  " << e.first << " --- " << errorcode2description(e.first) << std::endl;
-  //     ss << setw(11) << "(" << e.second << " primitives)" << std::endl;
-  //   }
-  // }
-  // ss << "+++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-  // return ss.str();
-}
-
-
-void write_report_xml(std::ofstream& ss,
-                      std::string ifile, 
-                      double snap_tolerance,
-                      double planarity_d2p,
-                      double planarity_n,
-                      vector<Building>& lsBuilding,
-                      IOErrors ioerrs)
-{
-
-  // ss << "<val3dity>" << std::endl;
-  // ss << "\t<inputFile>" << ifile << "</inputFile>" << std::endl;
-  // ss << "\t<primitives>";
-  // if (prim3d == SOLID)
-  //   ss << "gml:Solid";
-  // else if (prim3d == COMPOSITESURFACE)
-  //   ss << "gml:CompositeSurface";
-  // else
-  //   ss << "gml:MultiSurface";
-  // ss << "</primitives>" << std::endl;
-  // ss << "\t<snap_tolerance>" << snap_tolerance << "</snap_tolerance>" << std::endl;
-  // ss << "\t<planarity_d2p>" << planarity_d2p << "</planarity_d2p>" << std::endl;
-  // ss << "\t<planarity_n>" << planarity_n << "</planarity_n>" << std::endl;
-  // ss << "\t<totalprimitives>" << lsSolids.size() << "</totalprimitives>" << std::endl;
-  // int bValid = 0;
-  // for (auto& s : lsSolids)
-  //   if (s.is_valid() == true)
-  //     bValid++;
-  // ss << "\t<validprimitives>" << bValid << "</validprimitives>" << std::endl;
-  // ss << "\t<invalidprimitives>" << (lsSolids.size() - bValid) << "</invalidprimitives>" << std::endl;
-  // std::time_t rawtime;
-  // struct tm * timeinfo;
-  // std::time (&rawtime);
-  // timeinfo = std::localtime ( &rawtime );
-  // char buffer[80];
-  // std::strftime(buffer, 80, "%c %Z", timeinfo);
-  // ss << "\t<time>" << buffer << "</time>" << std::endl;
-  // if (ioerrs.has_errors() == true)
-  // {
-  //   ss << ioerrs.get_report_xml();
-  // }
-  // else
-  // {
-  //   for (auto& s : lsSolids) 
-  //   {
-  //     if ( !((onlyinvalid == true) && (s.is_valid() == true)) )
-  //       ss << s.get_report_xml();
-  //   }
-  // }
-  // ss << "</val3dity>" << std::endl;
-}

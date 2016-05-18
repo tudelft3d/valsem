@@ -31,7 +31,6 @@ Surface::Surface(std::string sem, std::string id) {
   else {
     _sem = sem;
   }
-  std::cout << _sem << std::endl;
   _counter++;
 }
 
@@ -55,26 +54,6 @@ std::string Surface::get_semantics()
 bool Surface::is_empty()
 {
   return _lsPts.empty();
-}
-
-
-std::string Surface::get_report_xml()
-{
-  std::stringstream ss;
-  // for (auto& err : _errors)
-  // {
-  //   for (auto& e : _errors[std::get<0>(err)])
-  //   {
-  //     ss << "\t\t<Error>" << std::endl;
-  //     ss << "\t\t\t<code>" << std::get<0>(err) << "</code>" << std::endl;
-  //     ss << "\t\t\t<type>" << errorcode2description(std::get<0>(err)) << "</type>" << std::endl;
-  //     ss << "\t\t\t<shell>" << this->_id << "</shell>" << std::endl;
-  //     ss << "\t\t\t<face>" << std::get<0>(e) << "</face>" << std::endl;
-  //     ss << "\t\t\t<info>" << std::get<1>(e) << "</info>" << std::endl;
-  //     ss << "\t\t</Error>" << std::endl;
-  //   }
-  // }
-  return ss.str();
 }
 
 
@@ -137,29 +116,21 @@ int Surface::validate(double &anglenormal)
       return 0;
     }
 
-
     K::Plane_3 plane;
     linear_least_squares_fitting_3(uniquepts.begin(), uniquepts.end(), plane, CGAL::Dimension_tag<0>());
     Vector n = plane.orthogonal_vector();
     Vector up(0, 0, 1);
     double angle = std::acos(n * up) * 180 / PI;
     int re = 1;
-    if (_sem == "RoofSurface") {
-      std::cout << "RoofSurface" << std::endl;
-      std::cout << "angle " << angle << std::endl;
+    if ( (_sem == "RoofSurface") || (_sem == "OuterFloorSurface") ) {
       if ( angle > 85 )
         re = -1;
     }
     else if (_sem == "WallSurface") {
-      std::cout << "WallSurface" << std::endl;
-      std::cout << "angle " << angle << std::endl;
       if ( ( angle < 85) || (angle > 95) )
         re = -1;
     }
-    else if (_sem == "GroundSurface") {
-      std::cout << "GroundSurface" << std::endl;
-      std::cout << "angle " << angle << std::endl;
-      std::cout << n << std::endl;
+    else if ( (_sem == "GroundSurface") || (_sem == "OuterCeilingSurface") ) {
       Polygon pgn;
       vector<int>::const_iterator itp = _lsRings[0].begin();
       for ( ; itp != (_lsRings[0]).end(); itp++)
@@ -174,15 +145,6 @@ int Surface::validate(double &anglenormal)
       if (angle < 175)
         re = -1;
     }
-    else if (_sem == "OuterCeilingSurface") {
-      std::cout << "OuterCeilingSurface" << std::endl;
-      std::cout << "angle " << angle << std::endl;      
-    }
-    else if (_sem == "OuterFloorSurface") {
-      std::cout << "OuterFloorSurface" << std::endl;
-      std::cout << "angle " << angle << std::endl;      
-    }
-    std::cout << "---" << std::endl;
     anglenormal = angle;
     return re;
 }

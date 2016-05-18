@@ -22,12 +22,9 @@ public:
   std::string get_id();
   void        set_id(std::string id);
   std::string get_semantics();
-  
   int         add_point(Point3 p);
   void        add_ring(vector<int> r);
   int         validate(double &anglenormal);
-
-  std::string   get_report_xml();
   static int    _counter;
   
 private:

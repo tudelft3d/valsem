@@ -35,11 +35,11 @@ int Building::num_faces() {
 std::string Building::validate() {
   double anglenormal;
   std::stringstream ss;
-  ss << "\t<Building id=\"" << this->_id << "\">" << std::endl;
+  ss << "\t<building ID=\"" << this->_id << "\">" << std::endl;
   ss << "\t\t<numbersurfaces>" << this->num_faces() << "</numbersurfaces>" << std::endl;
   // ss << "\t\t<numbervalidsurfaces>" << this->num_faces() << "</numbervalidsurfaces>" << std::endl;
   for (auto& s : _lsSurfaces) {
-    ss << "\t\t<Surface id=\"" << s->get_id() << "\" type=\"" << s->get_semantics() << "\">" << std::endl;
+    ss << "\t\t<Surface ID=\"" << s->get_id() << "\" type=\"" << s->get_semantics() << "\">" << std::endl;
     int re = s->validate(anglenormal);
     if (re == 1)
       ss << "\t\t\t<valdity>True</valdity>" << std::endl; 
@@ -48,8 +48,9 @@ std::string Building::validate() {
     else if (re == 0)
       ss << "\t\t\t<valdity>Unknown</valdity>" << std::endl; 
     ss << "\t\t\t<orientation>" << anglenormal << "</orientation>" << std::endl; 
+    ss << "\t\t</Surface>" << std::endl;
   }
-  ss << "\t</Building>" << std::endl;
+  ss << "\t</building>" << std::endl;
   return ss.str();
 }
 
