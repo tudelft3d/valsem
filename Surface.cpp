@@ -113,7 +113,7 @@ int Surface::number_vertices()
 }
 
 
-bool Surface::validate(double tol_planarity_d2p, double tol_planarity_normals)
+int Surface::validate(double &anglenormal)
 {
     vector< Point3 > uniquepts;
     vector<int>::const_iterator itp = _lsRings[0].begin();
@@ -132,23 +132,29 @@ bool Surface::validate(double tol_planarity_d2p, double tol_planarity_normals)
       }
     }
 
+    if (uniquepts.size() < 3) {
+      anglenormal = -9999;
+      return 0;
+    }
+
+
     K::Plane_3 plane;
     linear_least_squares_fitting_3(uniquepts.begin(), uniquepts.end(), plane, CGAL::Dimension_tag<0>());
     Vector n = plane.orthogonal_vector();
     Vector up(0, 0, 1);
     double angle = std::acos(n * up) * 180 / PI;
-
+    int re = 1;
     if (_sem == "RoofSurface") {
       std::cout << "RoofSurface" << std::endl;
       std::cout << "angle " << angle << std::endl;
       if ( angle > 85 )
-        std::cout << "INVALID" << std::endl;
+        re = -1;
     }
     else if (_sem == "WallSurface") {
       std::cout << "WallSurface" << std::endl;
       std::cout << "angle " << angle << std::endl;
       if ( ( angle < 85) || (angle > 95) )
-        std::cout << "INVALID" << std::endl;
+        re = -1;
     }
     else if (_sem == "GroundSurface") {
       std::cout << "GroundSurface" << std::endl;
@@ -166,7 +172,7 @@ bool Surface::validate(double tol_planarity_d2p, double tol_planarity_normals)
         angle = std::acos(n * up) * 180 / PI;
       }
       if (angle < 175)
-        std::cout << "INVALID" << std::endl;
+        re = -1;
     }
     else if (_sem == "OuterCeilingSurface") {
       std::cout << "OuterCeilingSurface" << std::endl;
@@ -176,112 +182,8 @@ bool Surface::validate(double tol_planarity_d2p, double tol_planarity_normals)
       std::cout << "OuterFloorSurface" << std::endl;
       std::cout << "angle " << angle << std::endl;      
     }
-
-
     std::cout << "---" << std::endl;
-
-    return true;
+    anglenormal = angle;
+    return re;
 }
-//   std::clog << "--2D validation of each surface" << std::endl;
-//   bool isValid = true;
-//   size_t num = _lsFaces.size();
-//   for (int i = 0; i < static_cast<int>(num); i++)
-//   {
-//     //-- test for too few points (<3 for a ring)
-//     if (has_face_rings_toofewpoints(_lsFaces[i]) == true)
-//     {
-//       this->add_error(101, _lsFacesID[i]);
-//       isValid = false;
-//       continue;
-//     }
-//     //-- test for 2 repeated consecutive points
-//     if (has_face_2_consecutive_repeated_pts(_lsFaces[i]) == true)
-//     {
-//       this->add_error(102, _lsFacesID[i]);
-//       isValid = false;
-//       continue;
-//     }
-//     size_t numf = _lsFaces[i].size();
-//     vector<int> &ids = _lsFaces[i][0]; // helpful alias for the outer boundary
 
-//     //-- if only 3 pts it's now valid, no need to process further
-//     if ( (numf == 1) && (ids.size() == 3)) 
-//       continue;
-
-//     vector< Point3 > allpts;
-//     vector<int>::const_iterator itp = ids.begin();
-//     for ( ; itp != ids.end(); itp++)
-//     {
-//       allpts.push_back(_lsPts[*itp]);
-//     }
-//     //-- irings
-//     for (int j = 1; j < static_cast<int>(numf); j++)
-//     {
-//       vector<int> &ids2 = _lsFaces[i][j]; // helpful alias for the inner boundary
-//       vector<int>::const_iterator itp2 = ids2.begin();
-//       for ( ; itp2 != ids2.end(); itp2++)
-//       {
-//         allpts.push_back(_lsPts[*itp2]);
-//       }
-//     }
-//     double value;
-//     if (false == is_face_planar_distance2plane(allpts, value, tol_planarity_d2p))
-//     {
-//       std::stringstream msg;
-//       msg << "distance to fitted plane: " << value << " (tolerance=" << tol_planarity_d2p << ")";
-//       this->add_error(203, _lsFacesID[i], msg.str());
-//       isValid = false;
-//       continue;
-//     }
-//     //-- get projected oring
-//     Polygon pgn;
-//     vector<Polygon> lsRings;
-//     if (false == create_polygon(_lsPts, ids, pgn))
-//     {
-//       this->add_error(104, _lsFacesID[i], " outer ring self-intersects or is collapsed to a point or a line");
-//       isValid = false;
-//       continue;
-//     }
-//     lsRings.push_back(pgn);
-//     //-- check for irings
-//     for (int j = 1; j < static_cast<int>(numf); j++)
-//     {
-//       vector<int> &ids2 = _lsFaces[i][j]; // helpful alias for the inner boundary
-//       //-- get projected iring
-//       Polygon pgn;
-//       if (false == create_polygon(_lsPts, ids2, pgn))
-//       {
-//         this->add_error(104, _lsFacesID[i], "Inner ring self-intersects or is collapsed to a point or a line");
-//         isValid = false;
-//         continue;
-//       }
-//       lsRings.push_back(pgn);
-//     }
-//     //-- use GEOS to validate projected polygon
-//     if (!validate_polygon(lsRings, _lsFacesID[i]))
-//       isValid = false;
-//   }
-//   if (isValid)
-//   {
-//     //-- triangulate faces of the shell
-//     triangulate_shell();
-//     //-- check planarity by normal deviation method (of all triangle)
-//     std::clog << "--Planarity of surfaces (with normals deviation)" << std::endl;
-//     vector< vector<int*> >::iterator it = _lsTr.begin();
-//     int j = 0;
-//     double deviation;
-//     for ( ; it != _lsTr.end(); it++)
-//     { 
-//       if (is_face_planar_normals(*it, _lsPts, deviation, tol_planarity_normals) == false)
-//       {
-//         std::ostringstream msg;
-//         msg << "deviation normals: " << deviation << " (tolerance=" << tol_planarity_normals << ")";
-//         this->add_error(204, _lsFacesID[j], msg.str());
-//         isValid = false;
-//       }
-//       j++;
-//     }
-//   }
-//   _is_valid_2d = isValid;
-//   return isValid;
-// }

@@ -25,7 +25,7 @@ public:
   
   int         add_point(Point3 p);
   void        add_ring(vector<int> r);
-  bool        validate(double tol_planarity_d2p = 0, double tol_planarity_normals = 0);
+  int         validate(double &anglenormal);
 
   std::string   get_report_xml();
   static int    _counter;

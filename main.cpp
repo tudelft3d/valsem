@@ -142,7 +142,7 @@ int main(int argc, char* const argv[])
     std::cout << "==========" << std::endl;
 
     Building b = lsBuilding[0];
-    b.validate();
+    std::cout << b.validate() << std::endl;
 
 
     // //-- now the validation starts
