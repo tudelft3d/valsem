@@ -17,12 +17,21 @@
 
 int Surface::_counter = 0;
 
+
 Surface::Surface(std::string sem, std::string id) {
   if (id.empty() == true)
     _id = std::to_string(_counter);
   else
     _id = id;
-  _sem = sem;
+
+  std::size_t found = sem.find_first_of(":");
+  if (found != std::string::npos) {
+    _sem = sem.substr(found + 1);
+  }
+  else {
+    _sem = sem;
+  }
+  std::cout << _sem << std::endl;
   _counter++;
 }
 
@@ -133,11 +142,11 @@ int Surface::number_vertices()
 
 bool Surface::validate(double tol_planarity_d2p, double tol_planarity_normals)
 {
-    vector< Point3 > allpts;
+    vector< Point3 > uniquepts;
     vector<int>::const_iterator itp = _lsRings[0].begin();
     for ( ; itp != (_lsRings[0]).end(); itp++)
     {
-      allpts.push_back(_lsPts[*itp]);
+      uniquepts.push_back(_lsPts[*itp]);
     }
     //-- irings
     for (int j = 1; j < static_cast<int>(_lsRings.size()); j++)
@@ -146,31 +155,43 @@ bool Surface::validate(double tol_planarity_d2p, double tol_planarity_normals)
       vector<int>::const_iterator itp2 = ids2.begin();
       for ( ; itp2 != ids2.end(); itp2++)
       {
-        allpts.push_back(_lsPts[*itp2]);
+        uniquepts.push_back(_lsPts[*itp2]);
       }
     }
 
     K::Plane_3 plane;
-    linear_least_squares_fitting_3(allpts.begin(), allpts.end(), plane, CGAL::Dimension_tag<0>());
-    Vector v = plane.orthogonal_vector();
-    std::cout << v << std::endl;
+    linear_least_squares_fitting_3(uniquepts.begin(), uniquepts.end(), plane, CGAL::Dimension_tag<0>());
+    Vector n = plane.orthogonal_vector();
+    Vector up(0, 0, 1);
+    double angle = std::acos(n * up) * 180 / PI;
 
-    if (_sem == "bldg:WallSurface") {
-      // if (abs(v.z()) < 0.1 )
-        // std::cout << "WallSurface Valid" << std::endl;
-      // else
-        // std::cout << "WallSurface Invalid" << std::endl;
-      Vector n(1, 0, 0);
-      double sinalpha = abs(v*n);
-      double angle = std::asin(sinalpha) * 180.0 / 3.14159;
-      std::cout << "angle wall " << angle << std::endl;
+    if (_sem == "RoofSurface") {
+      std::cout << "RoofSurface" << std::endl;
+      std::cout << "angle " << angle << std::endl;
+      if ( angle > 85 )
+        std::cout << "INVALID" << std::endl;
     }
-    if (_sem == "bldg:RoofSurface") {
-      Vector up(0, 0, 1);
-      double cosine = v * up / CGAL::sqrt(v * up) / CGAL::sqrt(v * up);
-      double angle = std::acos(cosine);
-      std::cout << "angle roof " << angle << std::endl;
+    else if (_sem == "WallSurface") {
+      std::cout << "WallSurface" << std::endl;
+      std::cout << "angle " << angle << std::endl;
+      if ( ( angle < 85) || (angle > 95) )
+        std::cout << "INVALID" << std::endl;
     }
+    else if (_sem == "GroundSurface") {
+      std::cout << "GroundSurface" << std::endl;
+      std::cout << "angle " << angle << std::endl;
+      if (angle < 175)
+        std::cout << "INVALID" << std::endl;
+    }
+    else if (_sem == "OuterCeilingSurface") {
+      std::cout << "OuterCeilingSurface" << std::endl;
+      std::cout << "angle " << angle << std::endl;      
+    }
+    else if (_sem == "OuterFloorSurface") {
+      std::cout << "OuterFloorSurface" << std::endl;
+      std::cout << "angle " << angle << std::endl;      
+    }
+
 
     std::cout << "---" << std::endl;
 
