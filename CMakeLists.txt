@@ -37,16 +37,6 @@ if ( NOT Boost_FOUND )
   return()  
 endif()
 
-# GDAL
-set( GEOS_DIR .)
-find_package( GEOS )
-
-if ( NOT GEOS_FOUND )
-  message(SEND_ERROR "valsem requires the GEOS library")
-endif()
-
-include_directories( ${GEOS_INCLUDE_DIR}, include )
-
 
 # Creating entries for target: val3dity
 # ############################

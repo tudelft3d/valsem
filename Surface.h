@@ -34,10 +34,6 @@ private:
   std::string                     _sem;
 
 
-  // bool validate_polygon(vector<Polygon> &lsRings, std::string polygonid);
-  // bool has_face_rings_toofewpoints(const vector< vector<int> >& theface);
-  // bool has_face_2_consecutive_repeated_pts(const vector< vector<int> >& theface);
-
 };
 
 #endif /* Surface_hpp */
